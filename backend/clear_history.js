@@ -1,0 +1,1 @@
+const mongoose = require('mongoose'); mongoose.connect('mongodb://localhost:27017/securegate').then(async () => { const res = await mongoose.connection.db.collection('gmailaccounts').updateMany({}, { $set: { last_history_id: null } }); console.log('Cleared last_history_id for accounts:', res.modifiedCount); process.exit(0); }).catch(console.error);

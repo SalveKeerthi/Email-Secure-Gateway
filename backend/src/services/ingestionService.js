@@ -124,7 +124,7 @@ const runIngestionPipeline = async (accountId) => {
       // Already existed => skip label application + socket emissions
       if (upsertResult.upsertedCount === 0) continue;
 
-      const email = await Email.findOne({ email_id: rawEmail.gmail_id }).lean();
+      const email = await Email.findOne({ email_id: rawEmail.gmail_id });
       if (!email) continue;
 
       // Apply Gmail label

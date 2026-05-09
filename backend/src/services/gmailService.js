@@ -44,8 +44,6 @@ const ensureLabelsExist = async (gmail) => {
     if (found) {
       labelMap[key] = found.id;
     } else {
-      // Create label with colour
-      const colors = { safe: '#16a765', quarantine: '#f2b600', blocked: '#cc3a21' };
       try {
         const { data: created } = await gmail.users.labels.create({
           userId: 'me',
@@ -53,10 +51,6 @@ const ensureLabelsExist = async (gmail) => {
             name,
             messageListVisibility: 'show',
             labelListVisibility: 'labelShow',
-            color: {
-              backgroundColor: colors[key],
-              textColor: '#ffffff',
-            },
           },
         });
         labelMap[key] = created.id;

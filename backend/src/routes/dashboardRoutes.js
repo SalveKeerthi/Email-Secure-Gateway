@@ -10,7 +10,7 @@ const GmailAccount = require('../models/GmailAccount');
 router.get('/stats', async (req, res) => {
   try {
     const { accountId } = req.query;
-    const matchStage = accountId ? { account_id: require('mongoose').Types.ObjectId(accountId) } : {};
+    const matchStage = accountId ? { account_id: new (require('mongoose').Types.ObjectId)(accountId) } : {};
 
     const [totals, threatBreakdown, accounts] = await Promise.all([
       Email.aggregate([
@@ -73,7 +73,7 @@ router.get('/stats', async (req, res) => {
 router.get('/recent-emails', async (req, res) => {
   try {
     const { accountId, limit = 20 } = req.query;
-    const query = accountId ? { account_id: accountId } : {};
+    const query = accountId ? { account_id: new (require('mongoose').Types.ObjectId)(accountId) } : {};
     const emails = await Email.find(query)
       .sort({ timestamp: -1 })
       .limit(parseInt(limit))

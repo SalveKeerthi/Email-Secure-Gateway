@@ -68,9 +68,7 @@ router.get('/gmail/callback', async (req, res) => {
     try {
       const gmail = getGmailService(account);
       const labelIds = await ensureLabelsExist(gmail);
-      const historyId = await getLatestHistoryId(gmail);
       account.label_ids = labelIds;
-      account.last_history_id = historyId;
       await account.save();
     } catch (labelErr) {
       logger.warn(`Label setup error: ${labelErr.message}`);

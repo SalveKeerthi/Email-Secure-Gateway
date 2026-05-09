@@ -19,20 +19,46 @@ export const GmailProvider = ({ children }) => {
   const [topBarSyncing, setTopBarSyncing] = useState(false);
   const socketRef = useRef(null);
 
-  // ─── Load persisted account from localStorage ──────────────────────────────
+  // ─── Load persisted account from localStorage and sync with backend ───
   useEffect(() => {
+    let activeAccount = null;
     const saved = localStorage.getItem('sg_account');
     if (saved) {
       try {
-        const parsed = JSON.parse(saved);
-        setAccount(parsed);
+        activeAccount = JSON.parse(saved);
+        setAccount(activeAccount);
         setGmailStatus('Connected');
-        refreshStats(parsed._id);
-        loadRecentEmails(parsed._id);
-      } catch (_) {
+      } catch (_) {}
+    }
+
+    gmailApi.getAccounts().then(({ data }) => {
+      if (data && data.accounts && data.accounts.length > 0) {
+        let backendAccount = data.accounts[0];
+        if (activeAccount && activeAccount._id) {
+          const match = data.accounts.find(a => a._id === activeAccount._id);
+          if (match) backendAccount = match;
+        }
+        activeAccount = backendAccount;
+        setAccount(activeAccount);
+        setGmailStatus('Connected');
+        localStorage.setItem('sg_account', JSON.stringify(activeAccount));
+      } else {
+        activeAccount = null;
+        setAccount(null);
+        setGmailStatus('Not Connected');
         localStorage.removeItem('sg_account');
       }
-    }
+
+      if (activeAccount && activeAccount._id) {
+        dashboardApi.getStats(activeAccount._id).then(res => setStats(res.data)).catch(() => {});
+        dashboardApi.getRecentEmails(activeAccount._id, 50).then(res => setEmails(res.data.emails || [])).catch(() => {});
+      }
+    }).catch(() => {
+      if (activeAccount && activeAccount._id) {
+        dashboardApi.getStats(activeAccount._id).then(res => setStats(res.data)).catch(() => {});
+        dashboardApi.getRecentEmails(activeAccount._id, 50).then(res => setEmails(res.data.emails || [])).catch(() => {});
+      }
+    });
   }, []);
 
   // ─── Handle OAuth callback params from URL ────────────────────────────────
